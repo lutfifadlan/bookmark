@@ -1,50 +1,23 @@
-# ---- Stage 1: Build the app ----
-FROM node:22.14.0-alpine AS builder
+# Use the official Node.js image as the base image
+FROM node:23.11-slim
 
-WORKDIR /app
+# Set the working directory inside the container
+WORKDIR /usr/src/app
 
-# Install OpenSSL (required for Prisma client on Alpine)
-RUN apk add --no-cache openssl
-
-# Copy package.json and package-lock.json
+# Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
-# Install dependencies including Prisma CLI
+# Install the application dependencies
 RUN npm install
 
-# Copy the rest of the application
+# Copy the rest of the application files
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
-
-# Build the NestJS app
+# Build the NestJS application
 RUN npm run build
 
-# ---- Stage 2: Production image ----
-FROM node:22.14.0-alpine
-
-WORKDIR /app
-
-# Install OpenSSL again for Prisma client runtime
-RUN apk add --no-cache openssl
-
-# Copy only necessary files
-COPY package*.json ./
-
-# Install only production dependencies
-RUN npm install --only=production
-
-# Copy Prisma files (needed at runtime for client + env)
-COPY --from=builder /app/prisma ./prisma
-
-# Copy built app and generated Prisma client
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-
-# Expose app port
+# Expose the application port
 EXPOSE 8081
 
-# Start the app
+# Command to run the application
 CMD ["node", "dist/main"]
