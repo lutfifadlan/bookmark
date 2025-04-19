@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Solves bad gateway issue
-ENV HOST 0.0.0.0
+ENV HOST=0.0.0.0
 
 # Expose the application port
 EXPOSE 8081
