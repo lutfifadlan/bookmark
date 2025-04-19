@@ -19,10 +19,10 @@ RUN npm run build
 # Solves bad gateway issue
 ENV HOST=0.0.0.0
 
-ENV PORT=8081
+ENV PORT=8082
 
 # Expose the application port
-EXPOSE 8081
+EXPOSE 8082
 
 # Command to run the application
 CMD ["node", "dist/main"]
