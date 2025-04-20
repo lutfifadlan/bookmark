@@ -16,6 +16,6 @@ async function bootstrap() {
       whitelist: true,
     }),
   );
-  await app.listen(process.env.PORT ?? 3333);
+  await app.listen(process.env.PORT ?? 3333, process.env.HOST ?? '0.0.0.0');
 }
 bootstrap();
