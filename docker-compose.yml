@@ -1,25 +1,35 @@
-version: '3.8'
+version: "3.8"
+
 services:
-  dev-db:
-    image: postgres:13
+  app:
+    build:
+      context: .  # Assuming your app is located in the current directory
+      dockerfile: Dockerfile-prod  # Use your Dockerfile (assuming the default name)
+      args:
+        # Pass environment variables as build args if necessary
+        NODE_ENV: production
+        JWT_SECRET: ${JWT_SECRET}
+        DATABASE_URL: file:/usr/src/app/data/prod.db
+        PORT: 8081
+    restart: always
     ports:
-     - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: dev_db
+      - 8081:8081  # Your application port
+    volumes:
+      - sqlite_data:/usr/src/app/data  # Persistent storage for SQLite
     networks:
-      - dev-network
-  test-db:
-    image: postgres:13
-    ports:
-     - "5433:5432"
+      - dokploy-network
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: test_db
-    networks:
-      - test-network
+      DATABASE_URL: file:/usr/src/app/data/prod.db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bookmark-lutfifadlan.rule=Host(`bookmark.lutfifadlan.com`)"
+      - "traefik.http.routers.bookmark-lutfifadlan.entrypoints=websecure"
+      - "traefik.http.routers.bookmark-lutfifadlan.tls.certResolver=letsencrypt"
+      - "traefik.http.services.bookmark-lutfifadlan.loadbalancer.server.port=8081"
+
 networks:
-  dev-network:
-  test-network:
+  dokploy-network:
+    external: true
+
+volumes:
+  sqlite_data:
