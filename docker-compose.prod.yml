@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .  # Assuming your app is located in the current directory
+      dockerfile: Dockerfile-prod  # Use your Dockerfile (assuming the default name)
+      args:
+        # Pass environment variables as build args if necessary
+        NODE_ENV: production
+        JWT_SECRET: ${JWT_SECRET}
+        DATABASE_URL: file:/usr/src/app/data/database.sqlite
+        PORT: 8081
+    restart: always
+    ports:
+      - 8081:8081  # Your application port
+    volumes:
+      - sqlite_data:/usr/src/app/data  # Persistent storage for SQLite
+    networks:
+      - dokploy-network
+    environment:
+      DATABASE_URL: file:/usr/src/app/data/database.sqlite
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bookmark-lutfifadlan.rule=Host(`bookmark.lutfifadlan.com`)"
+      - "traefik.http.routers.bookmark-lutfifadlan.entrypoints=websecure"
+      - "traefik.http.routers.bookmark-lutfifadlan.tls.certResolver=letsencrypt"
+      - "traefik.http.services.bookmark-lutfifadlan.loadbalancer.server.port=8081"
+
+networks:
+  dokploy-network:
+    external: true
+
+volumes:
+  sqlite_data:
